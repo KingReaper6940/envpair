@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEnv, MAX_CHARS, audit, checklist, blankTemplate } from '../src/core.mjs';
+import { parseEnv, MAX_CHARS, audit, checklist, blankTemplate, unresolvedTemplate } from '../src/core.mjs';
 
 test('parses BOM, CRLF, export prefixes, comments, and quoted hashes', () => {
   const result = parseEnv('\uFEFF# example\r\nexport PORT = 3000\r\nTOKEN="a#b" # note\r\nEMPTY= # note');
@@ -64,4 +64,16 @@ test('exports omit values and blanks template in reference order', () => {
   assert.equal(outputs.includes('secret-'), false);
   assert.equal(blankTemplate(report), 'B=\nA=\n');
   assert.equal(report.ready, true);
+});
+
+test('unresolved template includes only missing and empty keys, never extras or values', () => {
+  const report = audit('A=reference-value\nB=\nC=', 'A=target-value\nB=\nEXTRA=other-value');
+  assert.equal(unresolvedTemplate(report), '# Fill these values, then merge manually. Do not replace your existing file.\nB=\nC=\n');
+  assert.equal(unresolvedTemplate(audit('A=', 'A=done')), '');
+  assert.throws(() => unresolvedTemplate(audit('', '')), /diagnostics/);
+});
+test('single quoted values keep backslashes literal and comments require closed quotes', () => {
+  assert.equal(parseEnv("A='a\\' # comment").keys[0].empty, false);
+  assert.equal(parseEnv('A="ok"#comment').diagnostics.length, 0);
+  assert.equal(parseEnv('A="ok" trailing').diagnostics[0].code, 'invalid-quoted-value');
 });

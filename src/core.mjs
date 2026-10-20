@@ -86,3 +86,9 @@ export function blankTemplate(report) {
   if (!report.valid) throw new Error('Resolve diagnostics before exporting a template.');
   return report.rows.filter(row => row.referenceLine !== null).map(row => `${row.key}=`).join('\n') + '\n';
 }
+
+export function unresolvedTemplate(report) {
+  if (!report.valid) throw new Error('Resolve diagnostics before exporting unresolved keys.');
+  const names = report.rows.filter(row => ['missing', 'empty'].includes(row.status)).map(row => `${row.key}=`);
+  return names.length ? '# Fill these values, then merge manually. Do not replace your existing file.\n' + names.join('\n') + '\n' : '';
+}

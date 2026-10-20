@@ -1,4 +1,4 @@
-import { audit, checklist, blankTemplate, MAX_CHARS } from './core.mjs';
+import { audit, checklist, blankTemplate, unresolvedTemplate, MAX_CHARS } from './core.mjs';
 const $ = id => document.getElementById(id);
 let report = null;
 let revision = 0;
@@ -25,9 +25,9 @@ function renderRows() {
   const selected = report.rows.filter(row => filter === 'all' || (filter === 'issues' ? ['missing', 'empty'].includes(row.status) : row.status === filter));
   for (const row of selected) {
     const tr = document.createElement('tr');
-    for (const value of [row.key, row.status, row.referenceLine ?? '—', row.targetLine ?? '—']) {
+    for (const [column, value] of [row.key, row.status, row.referenceLine ?? '—', row.targetLine ?? '—'].entries()) {
       const cell = document.createElement('td');
-      if (value === row.status) {
+      if (column === 1) {
         const badge = document.createElement('span');
         badge.className = `badge ${row.status}`;
         badge.textContent = row.status;
@@ -43,6 +43,7 @@ function exportText() {
   if (!report?.valid) return '';
   if ($('format').value === 'markdown') return checklist(report);
   if ($('format').value === 'template') return blankTemplate(report);
+  if ($('format').value === 'unresolved') return unresolvedTemplate(report);
   return JSON.stringify(report, null, 2) + '\n';
 }
 function compare() {
@@ -103,7 +104,7 @@ $('filter').addEventListener('change', renderRows);
 $('format').addEventListener('change', () => { $('preview').value = exportText(); });
 $('download').addEventListener('click', () => {
   if (!report?.valid) return;
-  const formats = { json: ['envpair-report.json', 'application/json'], markdown: ['envpair-checklist.md', 'text/markdown'], template: ['.env.example', 'text/plain'] };
+  const formats = { json: ['envpair-report.json', 'application/json'], markdown: ['envpair-checklist.md', 'text/markdown'], template: ['.env.example', 'text/plain'], unresolved: ['envpair-unresolved.txt', 'text/plain'] };
   const [name, type] = formats[$('format').value];
   const url = URL.createObjectURL(new Blob([exportText()], { type }));
   const link = document.createElement('a'); link.href = url; link.download = name; link.click();
