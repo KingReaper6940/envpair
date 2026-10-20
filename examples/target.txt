@@ -1,0 +1,5 @@
+# Fictional configuration for the sample audit.
+APP_URL=https://example.test
+DATABASE_URL=
+FEATURE_SEARCH=false
+OLD_FLAG=true

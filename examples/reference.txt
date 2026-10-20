@@ -1,0 +1,5 @@
+# Illustrative names only; no service credentials.
+APP_URL=
+DATABASE_URL=
+MAIL_FROM=
+FEATURE_SEARCH=

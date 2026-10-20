@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseEnv, MAX_CHARS } from '../src/core.mjs';
+import { parseEnv, MAX_CHARS, audit, checklist, blankTemplate } from '../src/core.mjs';
 
 test('parses BOM, CRLF, export prefixes, comments, and quoted hashes', () => {
   const result = parseEnv('\uFEFF# example\r\nexport PORT = 3000\r\nTOKEN="a#b" # note\r\nEMPTY= # note');
@@ -35,4 +35,33 @@ test('supports literal expansion without evaluating it', () => {
 test('enforces input and unique-key limits', () => {
   assert.throws(() => parseEnv('a'.repeat(MAX_CHARS + 1)), /100,000/);
   assert.throws(() => parseEnv(Array.from({ length: 1001 }, (_, i) => `K${i}=x`).join('\n')), /1,000/);
+});
+
+test('contract comparison reports missing, empty, present and extra in stable order', () => {
+  const report = audit('A=example\nB=\nC=', 'C=ok\nA=" "\nD=extra');
+  assert.deepEqual(report.summary, { missing: 1, empty: 1, present: 1, extra: 1 });
+  assert.deepEqual(report.rows.map(x => [x.key, x.status]), [['A', 'empty'], ['B', 'missing'], ['C', 'present'], ['D', 'extra']]);
+  assert.equal(report.ready, false);
+});
+test('names are case sensitive and prototype names remain ordinary keys', () => {
+  const report = audit('__proto__=\nconstructor=\nPort=', '__proto__=x\nconstructor=y\nPORT=1');
+  assert.deepEqual(report.summary, { missing: 1, empty: 0, present: 2, extra: 1 });
+});
+test('empty target is valid, empty reference is not', () => {
+  assert.equal(audit('A=', '').rows[0].status, 'missing');
+  assert.equal(audit('# blank', 'A=x').valid, false);
+});
+test('ambiguities block partial reports and exports', () => {
+  const report = audit('A=\nA=x', 'A=x');
+  assert.equal(report.valid, false);
+  assert.deepEqual(report.rows, []);
+  assert.throws(() => checklist(report), /diagnostics/);
+  assert.throws(() => blankTemplate(report), /diagnostics/);
+});
+test('exports omit values and blanks template in reference order', () => {
+  const report = audit('B=secret-reference\nA=', 'B=secret-target\nA=ok\nEXTRA=secret-extra');
+  const outputs = JSON.stringify(report) + checklist(report) + blankTemplate(report);
+  assert.equal(outputs.includes('secret-'), false);
+  assert.equal(blankTemplate(report), 'B=\nA=\n');
+  assert.equal(report.ready, true);
 });
