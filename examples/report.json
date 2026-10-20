@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "valid": true,
+  "ready": false,
+  "diagnostics": [],
+  "rows": [
+    {
+      "key": "APP_URL",
+      "status": "present",
+      "referenceLine": 2,
+      "targetLine": 2
+    },
+    {
+      "key": "DATABASE_URL",
+      "status": "empty",
+      "referenceLine": 3,
+      "targetLine": 3
+    },
+    {
+      "key": "MAIL_FROM",
+      "status": "missing",
+      "referenceLine": 4,
+      "targetLine": null
+    },
+    {
+      "key": "FEATURE_SEARCH",
+      "status": "present",
+      "referenceLine": 5,
+      "targetLine": 4
+    },
+    {
+      "key": "OLD_FLAG",
+      "status": "extra",
+      "referenceLine": null,
+      "targetLine": 5
+    }
+  ],
+  "summary": {
+    "missing": 1,
+    "empty": 1,
+    "present": 2,
+    "extra": 1
+  }
+}
