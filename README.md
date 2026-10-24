@@ -1,5 +1,7 @@
 # Envpair
 
+[Open envpair](https://envpair-five.vercel.app)
+
 **All the right keys. None of the secrets.**
 
 Check a `.env` file against its reference before a configuration handoff. Envpair identifies missing keys, empty assignments, and extra keys, with line-number diagnostics for duplicates and unsupported syntax. Export a checklist without including configuration values.
@@ -99,7 +101,7 @@ Import this GitHub repository in your Vercel dashboard using:
 | Output directory | `dist` |
 | Install command | Empty / no dependencies |
 
-`vercel.json` includes the build/output settings. No environment variables, database, paid APIs, or server functions are required. This repository does not advertise a live deployment URL. You can also serve the contents of `dist/` on any static host with JavaScript module MIME support.
+`vercel.json` includes the build/output settings. No environment variables, database, paid APIs, or server functions are required. You can also serve the contents of `dist/` on any static host with JavaScript module MIME support.
 
 ## Project structure
 
